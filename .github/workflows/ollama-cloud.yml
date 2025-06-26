@@ -1,40 +1,43 @@
-name: Ollama Dev Server
+name: Ollama Dev Server 1
 
 on:
-  workflow_dispatch: # Trigger manually
+  workflow_dispatch:  # Manual trigger via GitHub UI
 
 jobs:
   run-ollama:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 360  # 6 hours max
 
     steps:
-    - name: Checkout (not used but required)
-      uses: actions/checkout@v3
+      - name: Checkout (required step)
+        uses: actions/checkout@v3
 
-    - name: Set up Docker
-      uses: docker/setup-buildx-action@v2
+      - name: Install Docker
+        uses: docker/setup-buildx-action@v2
 
-    - name: Install Ollama
-      run: |
-        curl -fsSL https://ollama.com/install.sh | sh
-        sudo systemctl start docker
-        ollama --version
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          sudo systemctl start docker
+          echo "✅ Docker & Ollama Installed"
 
-    - name: Pull Open Source Coding Models
-      run: |
-        ollama pull deepseek-coder:6.7b
-        ollama pull codellama:7b
-        ollama pull mistral
+      - name: Pull Open-Source Coding Models
+        run: |
+          ollama pull deepseek-coder:6.7b
+          ollama pull codellama:7b
+          ollama pull mistral
+          echo "✅ Models Pulled"
 
-    - name: Start Ollama Serve in Background
-      run: |
-        nohup ollama serve > ollama.log 2>&1 &
+      - name: Start Ollama Server
+        run: |
+          nohup ollama serve > ollama.log 2>&1 &
+          sleep 5
+          echo "✅ Ollama Server Started"
 
-    - name: Expose Ollama via locl (or ngrok if preferred)
-      run: |
-        npm install -g localtunnel
-        npx localtunnel --port 11434 > tunnel.log &
-        sleep 10
-        echo "🔗 Public URL:"
-        cat tunnel.log
+      - name: Expose Ollama via LocalTunnel (no sudo/global needed)
+        run: |
+          npm install -g serve
+          npx localtunnel --port 11434 > tunnel.log &
+          sleep 8
+          echo "🔗 Public Tunnel URL:"
+          cat tunnel.log
